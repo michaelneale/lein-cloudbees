@@ -1,0 +1,19 @@
+# lein-cloudbees
+
+The cloudbees deployment plugin. Deploy your ring apps to cloudbees PaaS. 
+
+## Usage
+
+install the plugin in your project via :dev-dependencies [lein-cloudbees "1.0.0-SNAPSHOT"], or 
+
+lein plugin install lein-cloudbees "1.0.0-SNAPSHOT"
+
+To run: 
+
+lein cloudbees -- will show you the options available. 
+
+## License
+
+Copyright (C) 2011 Michael Neale
+
+Distributed under the Eclipse Public License, the same as Clojure.
