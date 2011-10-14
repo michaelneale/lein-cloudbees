@@ -22,6 +22,7 @@ eg:
 	lein cloudbees deploy -- will deploy your app. 
 
 For this to work, you will need cloudbees-api-key, cloudbees-api-secret (both of which you can get from grandcentral.cloudbees.com) and cloudbees-app-id (for example michaelvideo/sudoku2 - accountname/app name)
+Use ~(slurp file) to read in your cloudbees credentials - DO NOT PUT THEM DIRECTLY IN project.clj
 
 ## License
 
