@@ -1,5 +1,7 @@
 # lein-cloudbees
 
+NOTE: still working out the cloudbees api dependency.
+
 The cloudbees deployment plugin. Deploy your ring apps to cloudbees PaaS trivially. 
 Of course your apps are not trivial, they are a special snowflake. 
 
