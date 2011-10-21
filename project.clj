@@ -1,7 +1,7 @@
-(defproject lein-cloudbees "1.0.0-SNAPSHOT"
+(defproject lein-cloudbees "1.0.0"
   :description "Cloudbees lein deployment plugin for deploying your special snowflake apps really really easily. See https://github.com/michaelneale/lein-cloudbees for docs and installation instructions. (when installed type lein cloudbees to see what you can do. For any ring based webapps."
   :dependencies [[org.clojure/clojure "1.2.1"]
-  					[com.cloudbees/cloudbees-api-client "1.0.0-SNAPSHOT"]
+  					[com.cloudbees/cloudbees-api-client "1.1.1"]
                     [lein-ring "0.4.5"]]	
 
 
