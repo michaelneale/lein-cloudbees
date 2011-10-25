@@ -1,6 +1,7 @@
 (ns leiningen.cloudbees
   (:use [leiningen.help :only (help-for)])
-  (:require [leiningen.ring.uberwar :as war]))
+  (:require [leiningen.ring.uberwar :as war]
+            [clojure.java.io]))
 
 (def endpoint "https://api.cloudbees.com/api")
 
@@ -63,6 +64,42 @@
     (contains-element? project :cloudbees-api-secret "- The api secret is the secret key from grandcentral.cloudbees.com")
     (contains-element? project :cloudbees-app-id "- The appid is the account name/app name: for example acme/appname")))
 
+(defn- user-prop
+  "Returns the system property for user.<key>"
+  [key]
+  (System/getProperty (str "user." key)))
+
+(def home-dir (user-prop "home"))
+
+(def bees-config-file (str home-dir "/.bees/bees.config"))
+
+(defn- bees-config? [] (.exists (java.io.File. bees-config-file)))
+
+(defn- load-props
+  [file-name]
+  (with-open [^java.io.Reader reader (clojure.java.io/reader file-name)]
+    (let [props (java.util.Properties.)]
+      (.load props reader)
+      (into {} (for [[k v] props] [(keyword k) v])))))
+
+(defn- bees-config []
+  (try
+    (load-props (str home-dir "/.bees/bees.config"))
+    (catch java.io.IOException e {})))
+
+(defn- merge-transpose
+  ([map mapfrom key keyfrom]
+    (if (contains? map key)
+      map
+      (if (contains? mapfrom keyfrom)
+        (assoc map key (mapfrom keyfrom))
+        map)))
+  ([map mapfrom key keyfrom & ks]
+   (let [ret (merge-transpose map mapfrom key keyfrom)]
+     (if ks
+       (recur ret mapfrom (first ks) (second ks) (nnext ks))
+       ret))))
+
 (defn cloudbees
   "Manage a ring-based application on Cloudbees."
   {:help-arglists '([list-apps deploy tail restart stop start])
@@ -70,12 +107,13 @@
   ([project]
     (println (help-for "cloudbees")))
   ([project subtask & args]
-    (if (validate project)
-      (let [client (cb-client project)]
-        (case subtask
-          "list-apps" (apply list-apps client project args)
-          "deploy" (apply deploy client project args)
-          "tail" (apply tail client project args)
-          "restart" (apply restart client project args)
-          "stop" (apply stop client project args)
-          "start" (apply start client project args))))))
+    (let [project (merge-transpose project (bees-config) :cloudbees-api-key :bees.api.key :cloudbees-api-secret :bees.api.secret)]
+      (if (validate project)
+        (let [client (cb-client project)]
+          (case subtask
+            "list-apps" (apply list-apps client project args)
+            "deploy" (apply deploy client project args)
+            "tail" (apply tail client project args)
+            "restart" (apply restart client project args)
+            "stop" (apply stop client project args)
+            "start" (apply start client project args)))))))
