@@ -1,89 +1,119 @@
 (ns leiningen.cloudbees
-    (:require [leiningen.ring.uberwar :as war]))
+  (:use [leiningen.help :only (help-for)])
+  (:require [leiningen.ring.uberwar :as war]
+            [clojure.java.io]))
 
-    (def endpoint "https://api.cloudbees.com/api")
-    (def usage 
-    "Usage:
-    lein cloudbees list-apps
-    lein cloudbees deploy
-    lein cloudbees tail (tail log)
-    lein cloubees restart
-    lein cloudbees stop
-    lein cloudbees start")
+(def endpoint "https://api.cloudbees.com/api")
 
-    (defn cb-client [project] (doto (new com.cloudbees.api.BeesClient 
-                        endpoint 
-                        (get project :cloudbees-api-key) 
-                        (get project :cloudbees-api-secret) 
-                        "xml" 
-                        "1.0") (.setVerbose false)))
+(defn- cb-client [project]
+  (doto (new com.cloudbees.api.BeesClient
+          endpoint
+          (:cloudbees-api-key project)
+          (:cloudbees-api-secret project)
+          "xml"
+          "1.0") (.setVerbose false)))
 
-    (defn list-apps [project]       
-        (doall (map (fn [info] (println (. info getId) " - " (. info getStatus))) (. (. (cb-client project) applicationList) getApplications)))
-    )   
+(defn list-apps
+  "List the current applications deployed to CloudBees."
+  [client project]
+  (doall (map
+           (fn [info] (println (. info getId) " - " (. info getStatus)))
+           (. (. client applicationList) getApplications))))
 
-    ;; todo should have account in project, and pass in name from command line - secrets? 
-    (defn deploy-app [project]
-            (println "Deploying app to CloudBees, please wait....")
-            (println (. 
-                    (. (cb-client project) applicationDeployWar (get project :cloudbees-app-id) nil nil ".project.zip" nil nil)     
-                getUrl))
-            (println "Applcation deployed.")    
-    )   
+;; todo should have account in project, and pass in name from command line - secrets?
+(defn- deploy-app
+  [client project]
+  (println "Deploying app to CloudBees, please wait....")
+  (println (.
+             (. client applicationDeployWar (:cloudbees-app-id project) nil nil ".project.zip" nil nil)
+             getUrl))
+  (println "Applcation deployed."))
 
+(defn deploy
+  "Deploy the ring application to CloudBees."
+  [client project]
+  (war/uberwar project ".project.zip")
+  (deploy-app client project))
 
+(defn tail
+  "Tail the runtime log of the deployed application."
+  [client project]
+  (. client tailLog (:cloudbees-app-id project) "server" (. System out)))
 
-    (defn tail [project]
-        (. (cb-client project) tailLog (get project :cloudbees-app-id) "server" (. System out))
-    )
+(defn restart
+  "Restart the deployed application."
+  [client project]
+  (. client applicationRestart (:cloudbees-app-id project)))
 
-    (defn restart [project] (. (cb-client project) applicationRestart (get project :cloudbees-app-id) ))
-    (defn stop [project] (. (cb-client project) applicationStop (get project :cloudbees-app-id) ))
-    (defn start [project] (. (cb-client project) applicationStart (get project :cloudbees-app-id) ))
+(defn stop
+  "Stop the deployed application."
+  [client project]
+  (. client applicationStop (:cloudbees-app-id project)))
 
-    (defn package-deploy [project]      
-        (war/uberwar project ".project.zip")
-        (deploy-app project)
-    )
-    
+(defn start
+  "Start the deployed application."
+  [client project]
+  (. client applicationStart (:cloudbees-app-id project)))
 
-    (defn contains-element? [project key msg] 
-        (if (contains? project key) true (println "ERROR: Missing project config item" key msg))
-    )
+(defn- contains-element? [project key msg]
+  (if (contains? project key) true (println "ERROR: Missing project config item" key msg)))
 
+(defn- validate [project]
+  (and
+    (contains-element? project :cloudbees-api-key "- The api key is the id provided by cloudbees.")
+    (contains-element? project :cloudbees-api-secret "- The api secret is the secret key from grandcentral.cloudbees.com")
+    (contains-element? project :cloudbees-app-id "- The appid is the account name/app name: for example acme/appname")))
 
-    (defn validate [project]
-        (and 
-            (contains-element? project :cloudbees-api-key "- The api key is the id provided by cloudbees.")
-            (contains-element? project :cloudbees-api-secret "- The api secret is the secret key from grandcentral.cloudbees.com")
-            (contains-element? project :cloudbees-app-id "- The appid is the account name/app name: for example acme/appname"))
-    )
+(defn- user-prop
+  "Returns the system property for user.<key>"
+  [key]
+  (System/getProperty (str "user." key)))
 
-    (defn dispatch [project command]
-        (cond 
-            (= command "list-apps") (list-apps project)
-            (= command "deploy") (package-deploy project)
-            (= command "tail") (tail project)
-            (= command "restart") (restart project)
-            (= command "stop") (stop project)
-            (= command "start") (start project)
-        )
-    )
-                    
+(def home-dir (user-prop "home"))
 
-    (defn cloudbees [project & args] 
-        (if (validate project) 
-            (if (= nil (first args)) (println usage) (dispatch project (first args)))   
-            (println "\n")      
-        )
-    )   
+(def bees-config-file (str home-dir "/.bees/bees.config"))
 
+(defn- bees-config? [] (.exists (java.io.File. bees-config-file)))
 
+(defn- load-props
+  [file-name]
+  (with-open [^java.io.Reader reader (clojure.java.io/reader file-name)]
+    (let [props (java.util.Properties.)]
+      (.load props reader)
+      (into {} (for [[k v] props] [(keyword k) v])))))
 
+(defn- bees-config []
+  (try
+    (load-props (str home-dir "/.bees/bees.config"))
+    (catch java.io.IOException e {})))
 
+(defn- merge-transpose
+  ([map mapfrom key keyfrom]
+    (if (contains? map key)
+      map
+      (if (contains? mapfrom keyfrom)
+        (assoc map key (mapfrom keyfrom))
+        map)))
+  ([map mapfrom key keyfrom & ks]
+   (let [ret (merge-transpose map mapfrom key keyfrom)]
+     (if ks
+       (recur ret mapfrom (first ks) (second ks) (nnext ks))
+       ret))))
 
-
-
-    (defn cloudbees-old [project & args] 
-        (println (doto (new java.util.HashMap) (.put "a" 1) (.put "b" 2)))) 
-
+(defn cloudbees
+  "Manage a ring-based application on Cloudbees."
+  {:help-arglists '([list-apps deploy tail restart stop start])
+   :subtasks [#'list-apps #'deploy #'tail #'restart #'stop #'start]}
+  ([project]
+    (println (help-for "cloudbees")))
+  ([project subtask & args]
+    (let [project (merge-transpose project (bees-config) :cloudbees-api-key :bees.api.key :cloudbees-api-secret :bees.api.secret)]
+      (if (validate project)
+        (let [client (cb-client project)]
+          (case subtask
+            "list-apps" (apply list-apps client project args)
+            "deploy" (apply deploy client project args)
+            "tail" (apply tail client project args)
+            "restart" (apply restart client project args)
+            "stop" (apply stop client project args)
+            "start" (apply start client project args)))))))
