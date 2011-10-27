@@ -116,5 +116,5 @@
     (let [project (merge-transpose project (bees-config) :cloudbees-api-key :bees.api.key :cloudbees-api-secret :bees.api.secret)]
       (if (validate project)
         (if-let [f (get subtasks-table subtask)]
-          (apply (get subtasks-table subtask) (cb-client project) project args)
+          (apply f (cb-client project) project args)
           (throw (IllegalArgumentException. (str "No sub-task " subtask))))))))
