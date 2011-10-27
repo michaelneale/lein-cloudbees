@@ -100,20 +100,21 @@
        (recur ret mapfrom (first ks) (second ks) (nnext ks))
        ret))))
 
+(def subtasks [#'list-apps #'deploy #'tail #'restart #'stop #'start])
+
+(def arglist (map #(:name (meta %)) subtasks))
+
+(def subtasks-table (zipmap (map #(str %) arglist) (map #(var-get %) subtasks)))
+
 (defn cloudbees
   "Manage a ring-based application on Cloudbees."
-  {:help-arglists '([list-apps deploy tail restart stop start])
-   :subtasks [#'list-apps #'deploy #'tail #'restart #'stop #'start]}
+  {:help-arglists (list (vec arglist))
+   :subtasks subtasks}
   ([project]
     (println (help-for "cloudbees")))
   ([project subtask & args]
     (let [project (merge-transpose project (bees-config) :cloudbees-api-key :bees.api.key :cloudbees-api-secret :bees.api.secret)]
       (if (validate project)
-        (let [client (cb-client project)]
-          (case subtask
-            "list-apps" (apply list-apps client project args)
-            "deploy" (apply deploy client project args)
-            "tail" (apply tail client project args)
-            "restart" (apply restart client project args)
-            "stop" (apply stop client project args)
-            "start" (apply start client project args)))))))
+        (if-let [f (get subtasks-table subtask)]
+          (apply (get subtasks-table subtask) (cb-client project) project args)
+          (throw (IllegalArgumentException. (str "No sub-task " subtask))))))))
