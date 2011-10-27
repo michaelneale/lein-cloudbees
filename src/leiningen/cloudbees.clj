@@ -37,8 +37,10 @@
 
 (defn tail
   "Tail the runtime log of the deployed application."
-  [client project]
-  (. client tailLog (:cloudbees-app-id project) "server" (. System out)))
+  ([client project]
+    (tail client project "server"))
+  ([client project logname]
+    (. client tailLog (:cloudbees-app-id project) logname (. System out))))
 
 (defn restart
   "Restart the deployed application."
