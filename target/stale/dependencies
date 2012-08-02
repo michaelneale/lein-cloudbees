@@ -1,1 +1,0 @@
-([:dependencies [[org.clojure/clojure "1.4.0"] [com.cloudbees/cloudbees-api-client "1.2.0"] [lein-ring "0.7.1"]]])
