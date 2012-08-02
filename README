@@ -7,10 +7,9 @@ Of course your apps are not trivial, they are a special snowflake.
 
 ## Usage
 
-install the plugin in your project via either:
+install the plugin in your project:
 
-	:plugins [lein-cloudbees "1.0.3"] or
-	lein plugin install lein-cloudbees "1.0.3" (preferred - installs it for your whole system)
+	:plugins [lein-cloudbees "1.0.3"]
 
 To run: 
 

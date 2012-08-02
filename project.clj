@@ -5,11 +5,11 @@
 
   :url "https://github.com/michaelneale/lein-cloudbees"
 
-  :dependencies [[org.clojure/clojure "1.2.1"]
-                 [com.cloudbees/cloudbees-api-client "1.1.1"]
-                 [lein-ring "0.4.5"]]
+  :dependencies [[org.clojure/clojure "1.4.0"]
+                 [com.cloudbees/cloudbees-api-client "1.2.0"]
+                 [lein-ring "0.7.1"]]
 
-  :dev-dependencies [[lein-clojars "0.6.0"]]
+  :plugins [[lein-clojars "0.9.0"]]
 
   :eval-in-leiningen true
   )
