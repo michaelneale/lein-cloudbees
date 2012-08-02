@@ -25,7 +25,7 @@
   [client project]
   (println "Deploying app to CloudBees, please wait....")
   (println (.
-             (. client applicationDeployWar (:cloudbees-app-id project) nil nil ".project.zip" nil nil)
+             (. client applicationDeployWar (:cloudbees-app-id project) nil nil "target/.project.zip" nil nil)
              getUrl))
   (println "Applcation deployed."))
 
