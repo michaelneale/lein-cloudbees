@@ -27,7 +27,7 @@
   (println (.
              (. client applicationDeployWar (:cloudbees-app-id project) nil nil (clojure.java.io/file "target/.project.zip") nil true nil)
              getUrl))
-  (println "Applcation deployed."))
+  (println "Application deployed."))
 
 (defn deploy
   "Deploy the ring application to CloudBees."
