@@ -1,7 +1,7 @@
 # lein-cloudbees
 
-The cloudbees deployment plugin. Deploy your ring apps to cloudbees PaaS trivially. 
-Of course your apps are not trivial, they are a special snowflake. 
+The cloudbees deployment plugin. Deploy your ring apps to cloudbees PaaS trivially.
+Of course your apps are not trivial, they are a special snowflake.
 
 Currently uses war based deployment - but could be talked out of it to jetty if enough people nag me.
 
@@ -11,16 +11,19 @@ install the plugin in your project:
 
 	:plugins [lein-cloudbees "1.0.3"]
 
-To run: 
+To run:
 
-Create or cd into a ring based webapp project. 
-If you run 
-	lein cloudbees
+Create or cd into a ring based webapp project.
+If you run
+
+	 lein cloudbees
+
 then a list of commands will be provided.
 
-eg: 
+eg:
+
 	lein cloudbees list-apps -- returns a list of your apps !
-	lein cloudbees deploy -- will deploy your app. 
+	lein cloudbees deploy -- will deploy your app.
 
 For this to work, you will need cloudbees-api-key, cloudbees-api-secret (both of which you can get from grandcentral.cloudbees.com) and cloudbees-app-id (for example michaelvideo/sudoku2 - accountname/app name)
 Use ~(slurp file) to read in your cloudbees credentials - DO NOT PUT THEM DIRECTLY IN project.clj.
