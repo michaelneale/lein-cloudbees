@@ -27,6 +27,8 @@ Use ~(slurp file) to read in your cloudbees credentials - DO NOT PUT THEM DIRECT
 
 If you use the cloudbees SDK - it will read the credentials from ~/.bees/bees.config as normal (bees.api.key and bees.api.secret entries in that file, specifically).
 
+If your application is running in European region, override the default api endpoint by setting the `:cloudbees-api-url` key in the project map. e.g. `:cloudbees-api-url "https://api-eu.cloudbees.com/api"`.
+
 ## License
 
 Copyright (C) 2011 Michael Neale

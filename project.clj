@@ -1,4 +1,4 @@
-(defproject lein-cloudbees "1.0.4"
+(defproject lein-cloudbees "1.0.5"
   :description "Cloudbees lein deployment plugin for deploying your special snowflake apps really really easily.
   See https://github.com/michaelneale/lein-cloudbees for docs and installation instructions.
   (when installed type lein cloudbees to see what you can do. For any ring based webapps."

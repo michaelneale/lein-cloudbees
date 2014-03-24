@@ -7,7 +7,7 @@
 
 (defn- cb-client [project]
   (doto (new com.cloudbees.api.BeesClient
-          endpoint
+          (or (:cloudbees-api-url project) endpoint)
           (:cloudbees-api-key project)
           (:cloudbees-api-secret project)
           "xml"
