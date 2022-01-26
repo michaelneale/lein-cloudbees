@@ -1,5 +1,7 @@
 # lein-cloudbees
 
+[![Git](https://app.soluble.cloud/api/v1/public/badges/1dcace3f-59fc-44fa-aae2-c49dfd13b8ad.svg?orgId=451115019187)](https://app.soluble.cloud/repos/details/github.com/michaelneale/lein-cloudbees?orgId=451115019187)  
+
 The cloudbees deployment plugin. Deploy your ring apps to cloudbees PaaS trivially.
 Of course your apps are not trivial, they are a special snowflake.
 
